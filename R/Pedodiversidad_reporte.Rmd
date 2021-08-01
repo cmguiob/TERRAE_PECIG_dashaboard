@@ -131,24 +131,74 @@ vichada_nucleo <- files_paths %>% .[str_detect(.,"vichada_")] %>% st_read()
 caqueta_nucleo <- files_paths %>% .[str_detect(.,"caqueta_")] %>% st_read()
 
 ggplot() + 
-  geom_sf(data = meta, color = "#d96011", fill = "#d96011")+
-  geom_sf(data = vichada, color = "#e7ab17", fill = "#e7ab17")+
-  geom_sf(data = guaviare, color = "#7570b4", fill="#7570b4")+
-  geom_sf(data = caqueta, color = "#66a61f", fill = "#66a61f")+
-  geom_sf(data = nucleos, fill = "grey50", color = "grey10", alpha = 0.5)+
+  geom_sf(data = meta_nucleo, color = "#d96011", fill = "#d96011")+
+  geom_sf(data = vichada_nucleo, color = "#e7ab17", fill = "#e7ab17")+
+  geom_sf(data = guaviare_nucleo, color = "#7570b4", fill="#7570b4")+
+  geom_sf(data = caqueta_nucleo, color = "#66a61f", fill = "#66a61f")+
+  geom_sf(data = nucleos, fill = "grey50", color = "grey10", alpha = 0.7)+
   theme_minimal()
   
 
-
-
 # Cargar resultados del algoritmo. Hacer join por UCS_F
 
+RAO_nucleos <- read_csv("https://raw.githubusercontent.com/cmguiob/TERRAE_PECIG_dashaboard/main/Resultados/Pedodiversidad_RAO_nucleos_1_2.csv") %>%
+  mutate(NUCLEO = case_when(
+    NUCLEO_ID == 1 ~ "San Jose",
+    NUCLEO_ID == 2 ~ "Caqueta"))
+
+#Join
+
+meta_RAO <- left_join(meta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO"))
+
+guaviare_RAO <- left_join(guaviare_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Guaviare"), by = c("UCS_F", "DEPARTAMENTO"))
+
+vichada_RAO <- left_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO"))
+
+caqueta_RAO <- left_join(caqeuta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO"))
+
+
+ggplot() +
+  geom_sf(data = meta_RAO, aes(fill = RAO), color = NA )+
+  geom_sf(data = guaviare_RAO, aes(fill = RAO),color = NA)+
+  geom_sf(data = vichada_RAO, aes(fill = RAO),color = NA)+
+  scale_fill_viridis() + 
+  theme_minimal()
 
 ```
 
-```{r plot}
+```{r plot_incertidumbre}
+
+library(gghalves)
 
 #graficar snapshot del dashboard para meta
+
+ggplot(RAO_nucleos, aes(y = RAO, x = NUM_SUELOS)) +
+  geom_half_violin(width=1.4, alpha=0.4, color = NA, fill = "#CDC0B0", trim = FALSE, side = "l")+
+  geom_boxplot(width=0.2, color="black",show.legend = FALSE,  alpha=0.4, lwd=0.2, outlier.size = 0.001)+
+  geom_half_point_panel(aes(color = UCS_TIPO), alpha = 0.6, side = "r", range_scale = 0.1, size = 0.4, transformation = position_jitter())+
+  scale_colour_manual(name = "Tipo de UCS", 
+                      values = c("Consociacion" = "#5B9F90", "Asociacion" = "#B6B800","Complejo" = "#F0C73B",  "Disociacion" = "#E96149"),
+                      breaks=c('Disociacion','Complejo','Asociacion','Consociacion'))+
+  theme_bw(base_size = 9, base_family = "Comfortaa")+
+  guides(color = guide_legend(override.aes = list(size = 2)))+
+  labs(y = "Incertidumbre (entropía cuadratica)", x = "Numero de suelos reportados por UCS")+
+  facet_grid(~ DEPARTAMENTO, scales = "free")+
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank(),
+    strip.background = element_blank(),
+    strip.text = element_text(face="bold", color = "#CDC5BF", size = 9),
+    axis.text = element_text(size=6.5),
+    axis.title= element_text(size = 7.5),
+    axis.title.x = element_text(margin = margin(t = 8)),
+    axis.title.y = element_text(margin = margin(r = 8)),
+    axis.ticks.length.x = unit(.5, "mm"),
+    axis.ticks.length.y = unit(.1, "mm"),
+    axis.ticks.y=element_blank(),
+    legend.title = element_text(size = 9, face = "bold"),
+    legend.text = element_text(size = 7.5),
+    legend.key.size = unit(0.4, "cm")
+  )
 
 ```
 
@@ -156,3 +206,14 @@ ggplot() +
 ## Interpretación del dashboard
 
 En el dashboard (link) se presenta una gráfica interactiva 
+
+```{r}
+
+ggplot()+
+  geom_sf(data = nucleos %>% filter(OBSERV), fill = "grey50", color = NA, alpha = 0.5) +
+  geom_sf(data = meta_RAO, aes(fill = RAO), color = NA) +
+  scale_fill_viridis()+
+  theme_minimal()
+
+```
+
