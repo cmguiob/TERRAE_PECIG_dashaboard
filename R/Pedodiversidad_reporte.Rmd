@@ -76,11 +76,12 @@ for (i in 1:length(urls)){
 files_names <- list.files(tempd, pattern = "*.geojson") #Leer nombres de archivos
 files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
 
+#REEMPLAZAR SUELOS DEPTO POR DEPTO SOLAMENTE
 nucleos <- files_paths %>% .[str_detect(.,"Area_Influencia_Directa")] %>% st_read()
-meta <- files_paths %>% .[str_detect(.,"META")] %>% st_read()
-guaviare <- files_paths %>% .[str_detect(.,"GUAVIARE")] %>% st_read()
-vichada <- files_paths %>% .[str_detect(.,"VICHADA")] %>% st_read()
-caqueta <- files_paths %>% .[str_detect(.,"CAQUETA")] %>% st_read()
+#meta <- files_paths %>% .[str_detect(.,"META")] %>% st_read()
+#guaviare <- files_paths %>% .[str_detect(.,"GUAVIARE")] %>% st_read()
+#vichada <- files_paths %>% .[str_detect(.,"VICHADA")] %>% st_read()
+#caqueta <- files_paths %>% .[str_detect(.,"CAQUETA")] %>% st_read()
 
 ggplot() + 
   geom_sf(data = meta, color = "#d96011", fill = "#d96011")+
@@ -112,6 +113,31 @@ Los polígonos y los índices de pedodiversidad
 ```{r load_processed}
 
 #Debido a velocidad, se hizo la intesección en QGIS. Cargar los núcleos
+
+urls$deptos_nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Suelos_Departamentos_Nucleos_1_2.zip?raw=true"
+
+for (i in 1:length(urls)){
+  download.file(urls[[i]],temp, mode="wb")
+  unzip(temp, exdir=tempd) #Descomprimir
+}
+
+files_names <- list.files(tempd, pattern = "*.geojson") #Leer nombres de archivos
+files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
+
+nucleos <- files_paths %>% .[str_detect(.,"Area_Influencia_Directa")] %>% st_read()
+meta_nucleo <- files_paths %>% .[str_detect(.,"meta_")] %>% st_read()
+guaviare_nucleo <- files_paths %>% .[str_detect(.,"guaviare_")] %>% st_read()
+vichada_nucleo <- files_paths %>% .[str_detect(.,"vichada_")] %>% st_read()
+caqueta_nucleo <- files_paths %>% .[str_detect(.,"caqueta_")] %>% st_read()
+
+ggplot() + 
+  geom_sf(data = meta, color = "#d96011", fill = "#d96011")+
+  geom_sf(data = vichada, color = "#e7ab17", fill = "#e7ab17")+
+  geom_sf(data = guaviare, color = "#7570b4", fill="#7570b4")+
+  geom_sf(data = caqueta, color = "#66a61f", fill = "#66a61f")+
+  geom_sf(data = nucleos, fill = "grey50", color = "grey10", alpha = 0.5)+
+  theme_minimal()
+  
 
 
 
