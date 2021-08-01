@@ -1,0 +1,132 @@
+---
+title: "PECIG Colombia"
+subtitle: "Diversidad de suelos"
+author: "Carlos Guio"
+date: "`r Sys.Date()`"
+knit: (function(inputFile, encoding) { 
+      out_dir <- 'Reportes';
+      rmarkdown::render(input = inputFile,
+                        encoding = encoding, 
+                        output_file = file.path(
+                                        here::here(), 
+                                        out_dir, 
+                                        '01_PECIG_Pedodiversidad.html'))
+                                        })
+output:
+  html_document:
+    theme: journal
+    highlight: tango
+    keep_md: true
+---
+
+
+```{r setup, message=FALSE, warning=FALSE}
+
+library(tidyverse)
+library(rgdal) #leer polígono
+library(sf) #manipular objetos espaciales tipo sf
+library(raster) #manipular objetos raster
+library(ggplot2)
+library(showtext) #fuentes de goolge
+library(colorspace) #lighten or darken colors
+library(ggrepel) #etiquetas 
+library(ggsn) #escala gráfica
+
+knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300, out.width = "70%")
+
+showtext_auto()
+
+```
+
+## Rationale
+
+Los datos de suelo en la toma de decisiones ambientales. Los tipos de datos de suelo posibles. Su representación.
+
+## Los datos
+
+Los polígonos donde se realizaría la aspersión -llamados núcleos en el documento del PECIG(2020) - se obtuvieron de la página web de la Agencia Nacional de Licencias Ambientales (ANLA). La información geográfica de suelos por departamento se obtuvo de los datos abiertos del IGAC en 2019 y 2020. La información de perfiles de suelo se obtuvo de los estudios de suelo del IGAC de los departamentos respectivos, publicados en 2014. Debido a la disponibilidad de datos, se presentan únicamente los casos del núcleo san josé (departamentos Meta, Vichada y Guaviare) y el núcleo caquetá (departamento Caquetá) .
+
+
+```{r load_raw}
+
+#Como mejorar velocidad? modificar los .shp originales para que tengan tablas de atributos solo con los campos necesarios.
+
+#Cargar datos espaciales
+
+temp <- tempfile() #Crear objetos temporales
+tempd <- tempdir()
+
+urls <- list()
+
+urls$nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Area_Influencia_Directa_19022020.zip?raw=true"
+
+urls$meta <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2020_META_SUELOS_1_100.zip?raw=true"
+
+urls$guaviare <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2020_GUAVIARE_SUELOS_1_100.zip?raw=true"
+
+urls$vichada <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2019_VICHADA_SUELOS_1_100.zip?raw=true"
+
+urls$caqueta <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2020_CAQUETA_SUELOS_1_100.zip?raw=true"
+
+for (i in 1:length(urls)){
+  download.file(urls[[i]],temp, mode="wb")
+  unzip(temp, exdir=tempd) #Descomprimir
+}
+
+files_names <- list.files(tempd, pattern = "*.geojson") #Leer nombres de archivos
+files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
+
+nucleos <- files_paths %>% .[str_detect(.,"Area_Influencia_Directa")] %>% st_read()
+meta <- files_paths %>% .[str_detect(.,"META")] %>% st_read()
+guaviare <- files_paths %>% .[str_detect(.,"GUAVIARE")] %>% st_read()
+vichada <- files_paths %>% .[str_detect(.,"VICHADA")] %>% st_read()
+caqueta <- files_paths %>% .[str_detect(.,"CAQUETA")] %>% st_read()
+
+ggplot() + 
+  geom_sf(data = meta, color = "#d96011", fill = "#d96011")+
+  geom_sf(data = vichada, color = "#e7ab17", fill = "#e7ab17")+
+  geom_sf(data = guaviare, color = "#7570b4", fill="#7570b4")+
+  geom_sf(data = caqueta, color = "#66a61f", fill = "#66a61f")+
+  geom_sf(data = nucleos, fill = "grey50", color = "grey10", alpha = 0.5)+
+  theme_minimal()
+  
+
+head(meta)
+
+
+```
+
+## Preprocesamiento en QGIS
+
+A los polígonos obtenidos del IGAC se les corrigieron geometrías y se generaron índices espaciales en QGIS. Posteriormente se realizaron las intersecciones de los polígonos de suelos por departamento con los polígonos de núcleos de aspersión, para limitar el objeto de estudio, utilizando la función clip. A los polígonos resultantes se les agregó una campo que especifíca el núcleo.
+
+
+## Indice de pedodiversidad
+
+En los polígonos de suelos resultantes se identifican los códigos de las UCS, los suelos que las conforman y los identificadores de los perfiles de suelos. 
+
+Para estimar la pedodiversidad se utilizó el algoritmo propuesto por Rositter para estimar la similitud entre suelos. La automatización la estoy documentando en otro repositorio (link). Según el algorítmo...
+
+Los polígonos y los índices de pedodiversidad
+
+```{r load_processed}
+
+#Debido a velocidad, se hizo la intesección en QGIS. Cargar los núcleos
+
+
+
+# Cargar resultados del algoritmo. Hacer join por UCS_F
+
+
+```
+
+```{r plot}
+
+#graficar snapshot del dashboard para meta
+
+```
+
+
+## Interpretación del dashboard
+
+En el dashboard (link) se presenta una gráfica interactiva 
