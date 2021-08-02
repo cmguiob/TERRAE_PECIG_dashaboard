@@ -137,7 +137,7 @@ ggplot()+
                      distinct(., geometry, .keep_all = TRUE),   
                    aes(label = UCS_F, geometry = geometry),
                    alpha = 0.7,
-                   col = "grey50",
+                   col = "grey30",
                    size = 3,
                    force_pull  = 0.2,
                    max.overlaps = Inf,
