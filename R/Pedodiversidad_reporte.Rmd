@@ -132,13 +132,13 @@ Los polígonos y los índices de pedodiversidad
 
 #Join estimados de pedodiversidad con poligonos
 
-meta_RAO <- left_join(meta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO"))
+meta_RAO <- left_join(meta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
-guaviare_RAO <- left_join(guaviare_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Guaviare"), by = c("UCS_F", "DEPARTAMENTO"))
+guaviare_RAO <- left_join(guaviare_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Guaviare"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
-vichada_RAO <- left_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO"))
+vichada_RAO <- left_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
-caqueta_RAO <- left_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO"))
+caqueta_RAO <- left_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
 ```
 
@@ -201,11 +201,31 @@ En el dashboard (link) se presenta una gráfica interactiva
 
 ```{r plot_dash_1}
 
-ggplot()+
-  geom_sf(data = nucleos %>% filter(str_detect(OBSERV, "Nucleo 2")), fill = "grey50", color = NA, alpha = 0.5) +
-  geom_sf(data = meta_RAO, aes(fill = RAO), color = NA) +
+# En el dashboard, 
+dash_n1 <- ggplot()+
+  geom_sf(data = nucleos %>% filter(str_detect(OBSERV, "Nucleo 1")), 
+          fill = "grey50", 
+          color = NA, 
+          alpha = 0.5) +
+  geom_sf(data = meta_RAO, 
+          aes(fill = RAO), 
+              color = ifelse(meta_RAO$UCS_F == "LVCb", "red", NA),
+              lwd = ifelse(meta_RAO$UCS_F == "LVCb", 0.5, 0))+
+  scale_fill_viridis()+
+  guides(colour = FALSE)+
+  theme_minimal()
+
+dash_n2 <- ggplot()+
+  geom_sf(data = nucleos %>% filter(str_detect(OBSERV, "Nucleo 2")), 
+          fill = "grey50", 
+          color = NA, 
+          alpha = 0.5) +
+  geom_sf(data = caqueta_RAO, 
+          aes(fill = RAO), 
+          color = NA) +
   scale_fill_viridis()+
   theme_minimal()
+
 
 ```
 
