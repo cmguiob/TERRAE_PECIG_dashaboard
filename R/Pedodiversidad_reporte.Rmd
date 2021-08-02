@@ -25,12 +25,12 @@ output:
 library(tidyverse)
 library(rgdal) #leer polígono
 library(sf) #manipular objetos espaciales tipo sf
-library(raster) #manipular objetos raster
 library(ggplot2)
 library(showtext) #fuentes de goolge
 library(colorspace) #lighten or darken colors
 library(ggrepel) #etiquetas 
 library(ggsn) #escala gráfica
+library(gghalves)
 
 knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300, out.width = "70%")
 
@@ -60,13 +60,10 @@ urls <- list()
 
 urls$nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Area_Influencia_Directa_19022020.zip?raw=true"
 
-urls$meta <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2020_META_SUELOS_1_100.zip?raw=true"
+urls$deptos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/DIVA_adm_colombia.zip?raw=true"
 
-urls$guaviare <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2020_GUAVIARE_SUELOS_1_100.zip?raw=true"
+urls$deptos_nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Suelos_Departamentos_Nucleos_1_2.zip?raw=true"
 
-urls$vichada <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2019_VICHADA_SUELOS_1_100.zip?raw=true"
-
-urls$caqueta <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/IGAC_2020_CAQUETA_SUELOS_1_100.zip?raw=true"
 
 for (i in 1:length(urls)){
   download.file(urls[[i]],temp, mode="wb")
@@ -76,31 +73,51 @@ for (i in 1:length(urls)){
 files_names <- list.files(tempd, pattern = "*.geojson") #Leer nombres de archivos
 files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
 
-#REEMPLAZAR SUELOS DEPTO POR DEPTO SOLAMENTE
+# Crear objetos
 nucleos <- files_paths %>% .[str_detect(.,"Area_Influencia_Directa")] %>% st_read()
-#meta <- files_paths %>% .[str_detect(.,"META")] %>% st_read()
-#guaviare <- files_paths %>% .[str_detect(.,"GUAVIARE")] %>% st_read()
-#vichada <- files_paths %>% .[str_detect(.,"VICHADA")] %>% st_read()
-#caqueta <- files_paths %>% .[str_detect(.,"CAQUETA")] %>% st_read()
+deptos <- files_paths %>% .[str_detect(.,"adm")] %>% st_read()
+meta_nucleo <- files_paths %>% .[str_detect(.,"meta_")] %>% st_read()
+guaviare_nucleo <- files_paths %>% .[str_detect(.,"guaviare_")] %>% st_read()
+vichada_nucleo <- files_paths %>% .[str_detect(.,"vichada_")] %>% st_read()
+caqueta_nucleo <- files_paths %>% .[str_detect(.,"caqueta_")] %>% st_read()
 
-ggplot() + 
-  geom_sf(data = meta, color = "#d96011", fill = "#d96011")+
-  geom_sf(data = vichada, color = "#e7ab17", fill = "#e7ab17")+
-  geom_sf(data = guaviare, color = "#7570b4", fill="#7570b4")+
-  geom_sf(data = caqueta, color = "#66a61f", fill = "#66a61f")+
-  geom_sf(data = nucleos, fill = "grey50", color = "grey10", alpha = 0.5)+
-  theme_minimal()
-  
 
-head(meta)
+#Cargar resultados del algoritmo.
+RAO_nucleos <- read_csv("https://raw.githubusercontent.com/cmguiob/TERRAE_PECIG_dashaboard/main/Resultados/Pedodiversidad_RAO_nucleos_1_2.csv") %>%
+  mutate(NUCLEO = case_when(
+    NUCLEO_ID == 1 ~ "San Jose",
+    NUCLEO_ID == 2 ~ "Caqueta"))
 
 
 ```
 
+
+```{r}
+
+ggplot() + 
+  geom_sf(data = deptos %>% 
+            filter(NAME_1 %in% c("Meta", "Vichada", "Guaviare", "Caquetá")),
+          aes(fill = NAME_1),
+          color = NA) +
+  geom_sf(data = nucleos, fill = "grey40", color = "grey50", alpha = 0.4)+
+  theme_minimal()
+  
+```
 ## Preprocesamiento en QGIS
 
 A los polígonos obtenidos del IGAC se les corrigieron geometrías y se generaron índices espaciales en QGIS. Posteriormente se realizaron las intersecciones de los polígonos de suelos por departamento con los polígonos de núcleos de aspersión, para limitar el objeto de estudio, utilizando la función clip. A los polígonos resultantes se les agregó una campo que especifíca el núcleo.
 
+```{r}
+
+#plot department clipped to nucleos
+ggplot() + 
+  geom_sf(data = meta_nucleo, color = "#d96011", fill = "#d96011")+
+  geom_sf(data = vichada_nucleo, color = "#e7ab17", fill = "#e7ab17")+
+  geom_sf(data = guaviare_nucleo, color = "#7570b4", fill="#7570b4")+
+  geom_sf(data = caqueta_nucleo, color = "#66a61f", fill = "#66a61f")+
+  geom_sf(data = nucleos, fill = "grey40", color = "grey50", alpha = 0.4)+
+  theme_minimal()
+```
 
 ## Indice de pedodiversidad
 
@@ -110,43 +127,10 @@ Para estimar la pedodiversidad se utilizó el algoritmo propuesto por Rositter p
 
 Los polígonos y los índices de pedodiversidad
 
-```{r load_processed}
 
-#Debido a velocidad, se hizo la intesección en QGIS. Cargar los núcleos
+```{r prep_RAO}
 
-urls$deptos_nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Suelos_Departamentos_Nucleos_1_2.zip?raw=true"
-
-for (i in 1:length(urls)){
-  download.file(urls[[i]],temp, mode="wb")
-  unzip(temp, exdir=tempd) #Descomprimir
-}
-
-files_names <- list.files(tempd, pattern = "*.geojson") #Leer nombres de archivos
-files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
-
-nucleos <- files_paths %>% .[str_detect(.,"Area_Influencia_Directa")] %>% st_read()
-meta_nucleo <- files_paths %>% .[str_detect(.,"meta_")] %>% st_read()
-guaviare_nucleo <- files_paths %>% .[str_detect(.,"guaviare_")] %>% st_read()
-vichada_nucleo <- files_paths %>% .[str_detect(.,"vichada_")] %>% st_read()
-caqueta_nucleo <- files_paths %>% .[str_detect(.,"caqueta_")] %>% st_read()
-
-ggplot() + 
-  geom_sf(data = meta_nucleo, color = "#d96011", fill = "#d96011")+
-  geom_sf(data = vichada_nucleo, color = "#e7ab17", fill = "#e7ab17")+
-  geom_sf(data = guaviare_nucleo, color = "#7570b4", fill="#7570b4")+
-  geom_sf(data = caqueta_nucleo, color = "#66a61f", fill = "#66a61f")+
-  geom_sf(data = nucleos, fill = "grey50", color = "grey10", alpha = 0.7)+
-  theme_minimal()
-  
-
-# Cargar resultados del algoritmo. Hacer join por UCS_F
-
-RAO_nucleos <- read_csv("https://raw.githubusercontent.com/cmguiob/TERRAE_PECIG_dashaboard/main/Resultados/Pedodiversidad_RAO_nucleos_1_2.csv") %>%
-  mutate(NUCLEO = case_when(
-    NUCLEO_ID == 1 ~ "San Jose",
-    NUCLEO_ID == 2 ~ "Caqueta"))
-
-#Join
+#Join estimados de pedodiversidad con poligonos
 
 meta_RAO <- left_join(meta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO"))
 
@@ -154,23 +138,32 @@ guaviare_RAO <- left_join(guaviare_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO =
 
 vichada_RAO <- left_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO"))
 
-caqueta_RAO <- left_join(caqeuta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO"))
+caqueta_RAO <- left_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO"))
 
+```
+
+## Resultados
+
+
+
+```{r plot_mapa_RAO}
+library(viridis)
 
 ggplot() +
   geom_sf(data = meta_RAO, aes(fill = RAO), color = NA )+
   geom_sf(data = guaviare_RAO, aes(fill = RAO),color = NA)+
   geom_sf(data = vichada_RAO, aes(fill = RAO),color = NA)+
-  scale_fill_viridis() + 
+  geom_sf(data = caqueta_RAO, aes(fill = RAO),color = NA)+
+  scale_fill_viridis(option = "magma") + 
   theme_minimal()
 
 ```
 
-```{r plot_incertidumbre}
 
-library(gghalves)
 
-#graficar snapshot del dashboard para meta
+```{r plot_UCS}
+
+#graficar EDA de UCS
 
 ggplot(RAO_nucleos, aes(y = RAO, x = NUM_SUELOS)) +
   geom_half_violin(width=1.4, alpha=0.4, color = NA, fill = "#CDC0B0", trim = FALSE, side = "l")+
@@ -202,15 +195,14 @@ ggplot(RAO_nucleos, aes(y = RAO, x = NUM_SUELOS)) +
 
 ```
 
-
 ## Interpretación del dashboard
 
 En el dashboard (link) se presenta una gráfica interactiva 
 
-```{r}
+```{r plot_dash_1}
 
 ggplot()+
-  geom_sf(data = nucleos %>% filter(OBSERV), fill = "grey50", color = NA, alpha = 0.5) +
+  geom_sf(data = nucleos %>% filter(str_detect(OBSERV, "Nucleo 2")), fill = "grey50", color = NA, alpha = 0.5) +
   geom_sf(data = meta_RAO, aes(fill = RAO), color = NA) +
   scale_fill_viridis()+
   theme_minimal()
