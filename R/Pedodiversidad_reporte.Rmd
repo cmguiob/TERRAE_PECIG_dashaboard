@@ -3,15 +3,6 @@ title: "PECIG Colombia"
 subtitle: "Diversidad de suelos"
 author: "Carlos Guio"
 date: "`r Sys.Date()`"
-knit: (function(inputFile, encoding) { 
-      out_dir <- 'Reportes';
-      rmarkdown::render(input = inputFile,
-                        encoding = encoding, 
-                        output_file = file.path(
-                                        here::here(), 
-                                        out_dir, 
-                                        '01_PECIG_Pedodiversidad.html'))
-                                        })
 output:
   html_document:
     theme: journal
@@ -25,18 +16,50 @@ output:
 library(tidyverse)
 library(rgdal) #leer polígono
 library(sf) #manipular objetos espaciales tipo sf
-library(ggplot2)
+library(colorblindr)
 library(showtext) #fuentes de goolge
 library(colorspace) #lighten or darken colors
 library(ggrepel) #etiquetas 
 library(ggsn) #escala gráfica
 library(gghalves)
+library(wesanderson)
+
 
 knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300, out.width = "70%")
 
 showtext_auto()
 
 ```
+
+```{r theme_setup}
+
+pal <- wes_palette("Zissou1", 100, type = "continuous")
+
+# Obtener fuentes
+font_add_google(name = "Roboto Condensed", family= "robotoc")
+font_add_google(name = "Roboto", family= "roboto")
+
+
+# Definir theme
+theme_set(theme_minimal(base_family = "roboto"))
+
+theme_update(panel.grid = element_blank(),
+             axis.text = element_text(family = "robotoc",
+                                        color = "#c3beb8"),
+             axis.title = element_blank(),
+             axis.ticks =  element_line(color = "#c3beb8", size = .7),
+             legend.title = element_text(size = 13, 
+                                         face = "bold", 
+                                         color = "grey20", 
+                                         family = "roboto"),
+             legend.text = element_text(size = 9, 
+                                        color = "#c3beb8", 
+                                        family = "robotoc",
+                                        face = "bold"),
+             legend.key.size = unit(0.8, "cm"))
+
+```
+
 
 ## Rationale
 
@@ -88,35 +111,43 @@ RAO_nucleos <- read_csv("https://raw.githubusercontent.com/cmguiob/TERRAE_PECIG_
     NUCLEO_ID == 1 ~ "San Jose",
     NUCLEO_ID == 2 ~ "Caqueta"))
 
-
+unlink(temp)
+unlink(tempd)
 ```
 
 
-```{r}
+```{r mapa_deptos, include = TRUE, echo = TRUE}
 
 ggplot() + 
   geom_sf(data = deptos %>% 
             filter(NAME_1 %in% c("Meta", "Vichada", "Guaviare", "Caquetá")),
           aes(fill = NAME_1),
           color = NA) +
-  geom_sf(data = nucleos, fill = "grey40", color = "grey50", alpha = 0.4)+
-  theme_minimal()
+  geom_sf(data = nucleos, fill = "grey70", color = NA, alpha = 0.7)+
+  scale_x_continuous(breaks=c(-78, -74, -70))+
+  scale_y_continuous(breaks=c(0,4,8)) +
+  scale_fill_OkabeIto()+
+  guides(fill = guide_legend( title = "Departamento")) 
   
 ```
+
 ## Preprocesamiento en QGIS
 
 A los polígonos obtenidos del IGAC se les corrigieron geometrías y se generaron índices espaciales en QGIS. Posteriormente se realizaron las intersecciones de los polígonos de suelos por departamento con los polígonos de núcleos de aspersión, para limitar el objeto de estudio, utilizando la función clip. A los polígonos resultantes se les agregó una campo que especifíca el núcleo.
 
-```{r}
+
+```{r mapa_nucleos, include = TRUE, echo = TRUE}
 
 #plot department clipped to nucleos
 ggplot() + 
-  geom_sf(data = meta_nucleo, color = "#d96011", fill = "#d96011")+
-  geom_sf(data = vichada_nucleo, color = "#e7ab17", fill = "#e7ab17")+
-  geom_sf(data = guaviare_nucleo, color = "#7570b4", fill="#7570b4")+
-  geom_sf(data = caqueta_nucleo, color = "#66a61f", fill = "#66a61f")+
-  geom_sf(data = nucleos, fill = "grey40", color = "grey50", alpha = 0.4)+
-  theme_minimal()
+  geom_sf(data = nucleos, fill = "grey70", color = NA, alpha = 0.7)+
+  geom_sf(data = meta_nucleo, color = NA, fill = "#069d73")+
+  geom_sf(data = vichada_nucleo, color = NA, fill = "#f0e443")+
+  geom_sf(data = guaviare_nucleo, color = NA, fill="#57b4e9")+
+  geom_sf(data = caqueta_nucleo, color = NA, fill = "#e69f16")+
+  scale_x_continuous(breaks=c(-78, -74, -70))+
+  scale_y_continuous(breaks=c(0,4,8))
+
 ```
 
 ## Indice de pedodiversidad
@@ -132,13 +163,13 @@ Los polígonos y los índices de pedodiversidad
 
 #Join estimados de pedodiversidad con poligonos
 
-meta_RAO <- left_join(meta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
+meta_RAO <- inner_join(meta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))  
 
-guaviare_RAO <- left_join(guaviare_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Guaviare"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
+guaviare_RAO <- inner_join(guaviare_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Guaviare"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) 
 
-vichada_RAO <- left_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
+vichada_RAO <- inner_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) 
 
-caqueta_RAO <- left_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
+caqueta_RAO <- inner_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))  
 
 ```
 
@@ -146,16 +177,21 @@ caqueta_RAO <- left_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == 
 
 
 
-```{r plot_mapa_RAO}
-library(viridis)
+```{r mapa_RAO, include = TRUE, echo = TRUE}
 
 ggplot() +
   geom_sf(data = meta_RAO, aes(fill = RAO), color = NA )+
   geom_sf(data = guaviare_RAO, aes(fill = RAO),color = NA)+
   geom_sf(data = vichada_RAO, aes(fill = RAO),color = NA)+
   geom_sf(data = caqueta_RAO, aes(fill = RAO),color = NA)+
-  scale_fill_viridis(option = "magma") + 
-  theme_minimal()
+  scale_fill_gradientn(colours = pal)+
+  theme(legend.position = "top")+
+  guides(fill = guide_colourbar(title.position = "top",
+                                title.hjust = 0.5,
+                                barwidth = unit(15,"lines"),
+                                barheight = unit(0.5,"lines")))+
+  scale_x_continuous(breaks=c(-76, -73, -70))+
+  scale_y_continuous(breaks=c(2,4))
 
 ```
 
@@ -165,7 +201,10 @@ ggplot() +
 
 #graficar EDA de UCS
 
-ggplot(RAO_nucleos, aes(y = RAO, x = NUM_SUELOS)) +
+# Temporal, mientras la función queda lista
+RAO_nucleos_vf <- RAO_nucleos[RAO_nucleos$UCS_F %in% rbind(meta_nucleo$UCS_F,guaviare_nucleo$UCS_F, vichada_nucleo$UCS_F, caqueta_nucleo$UCS),]
+
+plot_EDA <- ggplot(RAO_nucleos_vf, aes(y = RAO, x = NUM_SUELOS)) +
   geom_half_violin(width=1.4, alpha=0.4, color = NA, fill = "#CDC0B0", trim = FALSE, side = "l")+
   geom_boxplot(width=0.2, color="black",show.legend = FALSE,  alpha=0.4, lwd=0.2, outlier.size = 0.001)+
   geom_half_point_panel(aes(color = UCS_TIPO), alpha = 0.6, side = "r", range_scale = 0.1, size = 0.4, transformation = position_jitter())+
@@ -199,33 +238,48 @@ ggplot(RAO_nucleos, aes(y = RAO, x = NUM_SUELOS)) +
 
 En el dashboard (link) se presenta una gráfica interactiva 
 
-```{r plot_dash_1}
+```{r plot_dash_1, include = TRUE, echo = TRUE}
+
+meta_centroids = st_centroid(meta_RAO)
 
 # En el dashboard, 
-dash_n1 <- ggplot()+
-  geom_sf(data = nucleos %>% filter(str_detect(OBSERV, "Nucleo 1")), 
-          fill = "grey50", 
-          color = NA, 
-          alpha = 0.5) +
+ggplot()+
   geom_sf(data = meta_RAO, 
-          aes(fill = RAO), 
-              color = ifelse(meta_RAO$UCS_F == "LVCb", "red", NA),
-              lwd = ifelse(meta_RAO$UCS_F == "LVCb", 0.5, 0))+
-  scale_fill_viridis()+
-  guides(colour = FALSE)+
-  theme_minimal()
+          aes(fill = RAO),
+          color = NA)+
+  geom_label_repel( data = meta_centroids %>% 
+                     filter(UCS_F == "RVGay") %>%
+                     distinct(., geometry, .keep_all = TRUE),   
+                   aes(label = UCS_F, geometry = geometry),
+                   alpha = 0.7,
+                   col = "grey30",
+                   size = 3,
+                   force_pull  = 0.2,
+                   max.overlaps = Inf,
+                   direction = "both",
+                   box.padding = 0.5,
+                   stat = "sf_coordinates",
+                   family = "roboto",
+                   segment.size = 0.3,
+                   segment.square = FALSE,
+                   segment.curvature = -0.3,
+                   segment.angle = 30, 
+                   segment.ncp = 10,
+                   show.legend = FALSE) +
+  theme(legend.position = "top")+
+  scale_fill_gradientn(colours = pal)+
+  guides(colour = "none",
+         fill = guide_colourbar(title.position = "top",
+                                title.hjust = 0.5,
+                                barwidth = unit(15,"lines"),
+                                barheight = unit(0.5,"lines")))+
+  scale_x_continuous(breaks=c(-74, -73, -72))+
+  scale_y_continuous(breaks=c(2,3))
 
-dash_n2 <- ggplot()+
-  geom_sf(data = nucleos %>% filter(str_detect(OBSERV, "Nucleo 2")), 
-          fill = "grey50", 
-          color = NA, 
-          alpha = 0.5) +
-  geom_sf(data = caqueta_RAO, 
-          aes(fill = RAO), 
-          color = NA) +
-  scale_fill_viridis()+
-  theme_minimal()
+
+
 
 
 ```
+
 
