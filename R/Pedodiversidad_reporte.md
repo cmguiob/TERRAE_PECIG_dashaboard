@@ -25,7 +25,7 @@ library(gghalves)
 library(wesanderson)
 
 
-knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300, out.width = "85%")
+knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300)
 
 showtext_auto()
 ```
@@ -55,7 +55,7 @@ p_deptos <- ggplot() +
             filter(NAME_1 %in% c("Meta", "Vichada", "Guaviare", "Caquetá")),
           aes(fill = NAME_1),
           color = NA) +
-  geom_sf(data = nucleos, fill = "grey70", color = NA, alpha = 0.7)+
+  geom_sf(data = nucleos, fill = "#c3beb8", color = NA, alpha = 0.7)+
   theme(legend.position = "left")+
   scale_x_continuous(breaks=c(-78, -74, -70))+
   scale_y_continuous(breaks=c(0,4,8)) +
@@ -67,7 +67,7 @@ p_deptos <- ggplot() +
 
 #plot department clipped to nucleos
 p_nucleos <- ggplot() + 
-  geom_sf(data = nucleos, fill = "grey70", color = NA, alpha = 0.7)+
+  geom_sf(data = nucleos, fill = "#c3beb8", color = NA, alpha = 0.7)+
   geom_sf(data = meta_nucleo, color = NA, fill = "#069d73")+
   geom_sf(data = vichada_nucleo, color = NA, fill = "#f0e443")+
   geom_sf(data = guaviare_nucleo, color = NA, fill="#57b4e9")+
@@ -84,7 +84,7 @@ p_nucleos <- ggplot() +
 p_deptos + p_nucleos
 ```
 
-<img src="Pedodiversidad_reporte_files/figure-html/mapa_nucleos_deptos-1.png" width="85%" style="display: block; margin: auto;" />
+<img src="Pedodiversidad_reporte_files/figure-html/mapa_nucleos_deptos-1.png" style="display: block; margin: auto;" />
 
 
 ## Indices de pedodiversidad
@@ -108,7 +108,7 @@ ggplot() +
   geom_sf(data = vichada_RAO, aes(fill = RAO),color = NA)+
   geom_sf(data = caqueta_RAO, aes(fill = RAO),color = NA)+
   scale_fill_gradientn(colours = pal)+
-  ggsn::scalebar(data = meta_RAO, 
+  ggsn::scalebar(data = nucleos %>% filter(str_detect(OBSERV,"Nucleo 1|Nucleo 2")), 
            dist = 100, 
            dist_unit = "km",
            transform = TRUE,
@@ -117,7 +117,7 @@ ggplot() +
            st.size = 3,
            height=0.02,
            box.color = NA,
-           box.fill = c("grey20","grey80"),
+           box.fill = c("grey20","#c3beb8"),
            family = "robotoc")+
   theme(legend.position = "top")+
   guides(fill = guide_colourbar(title.position = "top",
@@ -128,7 +128,7 @@ ggplot() +
   scale_y_continuous(breaks=c(2,4))
 ```
 
-<img src="Pedodiversidad_reporte_files/figure-html/mapa_RAO-1.png" width="85%" style="display: block; margin: auto;" />
+<img src="Pedodiversidad_reporte_files/figure-html/mapa_RAO-1.png" style="display: block; margin: auto;" />
 
 
 
@@ -152,7 +152,7 @@ ggplot()+
                      distinct(., geometry, .keep_all = TRUE),   
                    aes(label = UCS_F, geometry = geometry),
                    alpha = 0.7,
-                   col = "grey30",
+                   col = "grey20",
                    size = 3,
                    force_pull  = 0.2,
                    max.overlaps = Inf,
@@ -175,7 +175,7 @@ ggplot()+
            st.size = 3,
            height=0.02,
            box.color = NA,
-           box.fill = c("grey20","grey80"),
+           box.fill = c("grey20","#c3beb8"),
            family = "robotoc")+
   theme(legend.position = "top")+
   scale_fill_gradientn(colours = pal)+
@@ -188,6 +188,6 @@ ggplot()+
   scale_y_continuous(breaks=c(2,3))
 ```
 
-<img src="Pedodiversidad_reporte_files/figure-html/plot_dash_1-1.png" width="85%" style="display: block; margin: auto;" />
+<img src="Pedodiversidad_reporte_files/figure-html/plot_dash_1-1.png" style="display: block; margin: auto;" />
 
 
