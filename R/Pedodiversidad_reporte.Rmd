@@ -23,6 +23,7 @@ library(ggrepel) #etiquetas
 library(ggsn) #escala gráfica
 library(gghalves)
 library(wesanderson)
+library(ggsci)
 
 
 knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300)
@@ -56,7 +57,9 @@ theme_update(panel.grid = element_blank(),
                                         color = "#c3beb8", 
                                         family = "robotoc",
                                         face = "bold"),
-             legend.key.size = unit(0.7, "cm"))
+             legend.key.size = unit(0.7, "cm"),
+             strip.background = element_blank(),
+             strip.text = element_text(face= "bold", color = "#c3beb8", size = 9))
 
 ```
 
@@ -177,6 +180,10 @@ vichada_RAO <- inner_join(vichada_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO ==
 
 caqueta_RAO <- inner_join(caqueta_nucleo, RAO_nucleos %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))  
 
+deptos_RAO <- rbind(meta_RAO, guaviare_RAO, vichada_RAO, caqueta_RAO)
+
+deptos_centroids = st_centroid(deptos_RAO) #para etiquetar poligonos en ggplot
+
 ```
 
 ## Resultados
@@ -186,12 +193,9 @@ Se presenta un mapa de cloropletas con los valores de entropía de RAO, que osci
 ```{r mapa_RAO, include = TRUE, echo = TRUE}
 
 ggplot() +
-  geom_sf(data = meta_RAO, aes(fill = RAO), color = NA )+
-  geom_sf(data = guaviare_RAO, aes(fill = RAO),color = NA)+
-  geom_sf(data = vichada_RAO, aes(fill = RAO),color = NA)+
-  geom_sf(data = caqueta_RAO, aes(fill = RAO),color = NA)+
+  geom_sf(data = deptos_RAO, aes(fill = RAO), color = NA )+
   scale_fill_gradientn(colours = pal)+
-  ggsn::scalebar(data = nucleos %>% filter(str_detect(OBSERV,"Nucleo 1|Nucleo 2")), 
+  ggsn::scalebar(data = deptos_RAO, 
            dist = 100, 
            dist_unit = "km",
            transform = TRUE,
@@ -203,7 +207,8 @@ ggplot() +
            box.fill = c("grey20","#c3beb8"),
            family = "robotoc")+
   theme(legend.position = "top")+
-  guides(fill = guide_colourbar(title.position = "top",
+  guides(fill = guide_colourbar(title = "Incertidumbre - Rao",
+                                title.position = "top",
                                 title.hjust = 0.5,
                                 barwidth = unit(15,"lines"),
                                 barheight = unit(0.5,"lines")))+
@@ -217,36 +222,43 @@ ggplot() +
 
 #graficar EDA de UCS
 
-# Temporal, mientras la función queda lista
-RAO_nucleos_vf <- RAO_nucleos[RAO_nucleos$UCS_F %in% rbind(meta_nucleo$UCS_F,guaviare_nucleo$UCS_F, vichada_nucleo$UCS_F, caqueta_nucleo$UCS),]
-
-plot_EDA <- ggplot(RAO_nucleos_vf, aes(y = RAO, x = NUM_SUELOS)) +
-  geom_half_violin(width=1.4, alpha=0.4, color = NA, fill = "#CDC0B0", trim = FALSE, side = "l")+
-  geom_boxplot(width=0.2, color="black",show.legend = FALSE,  alpha=0.4, lwd=0.2, outlier.size = 0.001)+
-  geom_half_point_panel(aes(color = UCS_TIPO), alpha = 0.6, side = "r", range_scale = 0.1, size = 0.4, transformation = position_jitter())+
+plot_EDA <- ggplot(deptos_RAO, 
+                   aes(y = RAO, x = NUM_SUELOS)) +
+  geom_half_violin(width=1.4, 
+                   alpha=0.4, 
+                   color = NA, 
+                   fill = "#c3beb8", 
+                   trim = FALSE, 
+                   side = "l")+
+  geom_boxplot(width=0.2, 
+               color="black",
+               show.legend = FALSE,  
+               alpha=0.4, 
+               lwd=0.2, 
+               outlier.size = 0.001)+
+  geom_half_point_panel(aes(color = UCS_TIPO), 
+                        alpha = 0.6, 
+                        side = "r", 
+                        range_scale = 0.1, 
+                        size = 0.4, 
+                        transformation = position_jitter())+
   scale_colour_manual(name = "Tipo de UCS", 
-                      values = c("Consociacion" = "#5B9F90", "Asociacion" = "#B6B800","Complejo" = "#F0C73B",  "Disociacion" = "#E96149"),
+                      values = c("Consociacion" = "#5B9F90", 
+                                 "Asociacion" = "#B6B800",
+                                 "Complejo" = "#F0C73B",  
+                                 "Disociacion" = "#E96149"),
                       breaks=c('Disociacion','Complejo','Asociacion','Consociacion'))+
-  theme_bw(base_size = 9, base_family = "Comfortaa")+
   guides(color = guide_legend(override.aes = list(size = 2)))+
   labs(y = "Incertidumbre (entropía cuadratica)", x = "Numero de suelos reportados por UCS")+
   facet_grid(~ DEPARTAMENTO, scales = "free")+
   theme(
-    panel.grid.major.x = element_blank(),
-    panel.grid.minor.x = element_blank(),
-    strip.background = element_blank(),
-    strip.text = element_text(face="bold", color = "#CDC5BF", size = 9),
-    axis.text = element_text(size=6.5),
-    axis.title= element_text(size = 7.5),
-    axis.title.x = element_text(margin = margin(t = 8)),
-    axis.title.y = element_text(margin = margin(r = 8)),
-    axis.ticks.length.x = unit(.5, "mm"),
-    axis.ticks.length.y = unit(.1, "mm"),
-    axis.ticks.y=element_blank(),
-    legend.title = element_text(size = 9, face = "bold"),
-    legend.text = element_text(size = 7.5),
-    legend.key.size = unit(0.4, "cm")
+    panel.border = element_rect(fill = NA, colour = "#c3beb8"),
+    axis.text = element_text(size = 7),
+    axis.title.x = element_text(margin = margin(t = 8), colour = "#c3beb8", size = 8),
+    axis.title.y = element_text(margin = margin(r = 8), colour = "#c3beb8", size = 8),
+    axis.ticks.y = element_blank()
   )
+
 
 ```
 
@@ -257,14 +269,13 @@ En el dashboard (link) se presenta una gráfica interactiva en la cual se puede 
 
 ```{r plot_dash_1, include = TRUE, echo = TRUE}
 
-meta_centroids = st_centroid(meta_RAO)
-
 # En el dashboard, 
 ggplot()+
-  geom_sf(data = meta_RAO, 
+  geom_sf(data = deptos_RAO %>% filter(DEPARTAMENTO == "Meta"), 
           aes(fill = RAO),
           color = NA)+
-  geom_label_repel( data = meta_centroids %>% 
+  geom_label_repel( data = deptos_centroids %>% 
+                     filter(DEPARTAMENTO == "Meta")%>%
                      filter(UCS_F == "RVGay") %>%
                      distinct(., geometry, .keep_all = TRUE),   
                    aes(label = UCS_F, geometry = geometry),
@@ -283,7 +294,7 @@ ggplot()+
                    segment.angle = 30, 
                    segment.ncp = 10,
                    show.legend = FALSE) +
-  ggsn::scalebar(data = meta_RAO, 
+  ggsn::scalebar(data = deptos_RAO %>% filter(DEPARTAMENTO == "Meta"), 
            dist = 50, 
            dist_unit = "km",
            transform = TRUE,
@@ -297,7 +308,8 @@ ggplot()+
   theme(legend.position = "top")+
   scale_fill_gradientn(colours = pal)+
   guides(colour = "none",
-         fill = guide_colourbar(title.position = "top",
+         fill = guide_colourbar(title = "Incertidumbre - Rao",
+                                title.position = "top",
                                 title.hjust = 0.5,
                                 barwidth = unit(15,"lines"),
                                 barheight = unit(0.5,"lines")))+
@@ -305,9 +317,42 @@ ggplot()+
   scale_y_continuous(breaks=c(2,3))
 
 
-
+#change the scale_x breaks to automate
 
 
 ```
 
+```{r plot_dash_2, include = TRUE, echo = TRUE}
+
+ggplot(data = RAO_nucleos %>% 
+         filter(DEPARTAMENTO == "Guaviare") %>% 
+         distinct(UCS_F, .keep_all = TRUE), 
+       aes(y = RAO, x = UCS_TIPO, color = RAO))+
+    geom_jitter(aes(size = NUM_SUELOS),
+                alpha = 0.5, 
+                width = 0.25, 
+                shape = 19)+
+    geom_hline(aes(yintercept = 0.5), 
+               color = "#c3beb8", 
+               size = 0.5, 
+               linetype = "dashed")+
+    stat_summary(fun = mean, geom = "point", size = 5, shape = 18, color = "grey20")+
+    coord_flip() +
+    guides(color = "none",
+           size = guide_legend(title = "Tipos de suelos",
+                               label.position = "bottom",
+                               nrow = 1,
+                               override.aes=list(colour= "#c3beb8",
+                                                 shape = 16)))+
+    scale_y_continuous(limits = c(0, 0.8))+
+    scale_size_continuous(breaks = c(1,2,3,4,5,6))+
+    scale_colour_gradientn(colours = pal) +
+    labs(x = NULL, y = "Incertidumbre - Rao")+
+    theme(legend.position = "top",
+          axis.text.y = element_text(size = 12, face = "bold"),
+          panel.border = element_rect(fill = NA, colour = "#c3beb8"))
+  
+
+
+```
 
