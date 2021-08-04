@@ -10,7 +10,7 @@ library(sf)
 temp <- tempfile() #Crear objetos temporales
 tempd <- tempdir()
 
-url <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Dashboard/RAO_UCS_deptos.zip?raw=true"
+url <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Dashboard/Dashboard_rds.zip?raw=true"
 
 download.file(url,temp, mode="wb")
 unzip(temp, exdir=tempd) #Descomprimir
@@ -56,10 +56,15 @@ theme_update(panel.grid = element_blank(),
 library(shiny)
 
 ui <- fluidPage(
+  headerPanel(title = "Unidades Cartográficas de Suelos del PMA - PECIG"),
+  sidebarPanel(
   selectInput(inputId = "departamento",
               label = "Selecciona un departamento",
-              choices = c("Guaviare","Meta", "Vichada", "Casanare")),
+              choices = c("Guaviare","Meta", "Vichada", "Caqueta")),
   plotOutput(outputId = "mapa")
+  ),
+  mainPanel(
+    plotOutput(outputId = "puntos"))
 )
 
 server <- function(input, output, session) {
@@ -111,6 +116,49 @@ server <- function(input, output, session) {
                                     barheight = unit(0.5,"lines")))
     
     
+  })
+  
+  output$puntos <- renderPlot({
+    
+    ggplot(data = deptos_RAO %>% 
+             st_drop_geometry()%>%
+             filter(DEPARTAMENTO == input$departamento)%>% 
+             distinct(UCS_F, .keep_all = TRUE), 
+           aes(y = RAO, x = UCS_TIPO, color = RAO))+
+      geom_jitter(aes(size = NUM_SUELOS),
+                  alpha = 0.5, 
+                  width = 0.25, 
+                  shape = 19)+
+      geom_label_repel(data = . %>% filter(UCS_F == "ZVAb"), 
+                       aes(label = UCS_F),
+                       alpha = 0.7,
+                       col = "grey20",
+                       size = 3,
+                       direction = "both",
+                       box.padding = 1,
+                       family = "roboto",
+                       segment.size = 0.3,
+                       segment.square = FALSE,
+                       show.legend = FALSE)+
+      geom_hline(aes(yintercept = 0.5), 
+                 color = "#c3beb8", 
+                 size = 0.5, 
+                 linetype = "dashed")+
+      stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "grey20")+
+      coord_flip() +
+      guides(color = "none",
+             size = guide_legend(title = "Tipos de suelos",
+                                 label.position = "bottom",
+                                 nrow = 1,
+                                 override.aes=list(colour= "#c3beb8",
+                                                   shape = 16)))+
+      scale_y_continuous(limits = c(0, 0.8))+
+      scale_size_continuous(breaks = c(1,2,3,4,5,6))+
+      scale_colour_gradientn(colours = pal) +
+      labs(x = NULL, y = "Incertidumbre - Rao")+
+      theme(legend.position = "top",
+            axis.text.y = element_text(size = 12, face = "bold"),
+            panel.border = element_rect(fill = NA, colour = "#c3beb8"))
   })
   
 }
