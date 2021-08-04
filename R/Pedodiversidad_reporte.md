@@ -2,7 +2,7 @@
 title: "PECIG Colombia"
 subtitle: "Diversidad de suelos"
 author: "Carlos Guio"
-date: "2021-08-02"
+date: "2021-08-04"
 output:
   html_document:
     theme: journal
@@ -23,6 +23,8 @@ library(ggrepel) #etiquetas
 library(ggsn) #escala gráfica
 library(gghalves)
 library(wesanderson)
+library(ggsci)
+library(here)
 
 
 knitr::opts_chunk$set(include = FALSE, echo = FALSE, warning = FALSE, message = FALSE, fig.align="center", fig.showtext = TRUE, fig.retina = 1, dpi = 300)
@@ -86,6 +88,17 @@ p_deptos + p_nucleos
 
 <img src="Pedodiversidad_reporte_files/figure-html/mapa_nucleos_deptos-1.png" style="display: block; margin: auto;" />
 
+```r
+rm(p_deptos, p_nucleos, deptos, nucleos)
+gc(verbose = F)
+```
+
+```
+##            used  (Mb) gc trigger  (Mb) max used  (Mb)
+## Ncells  1668200  89.1    2874237 153.6  2874237 153.6
+## Vcells 24407634 186.3   39792032 303.6 39355649 300.3
+```
+
 
 ## Indices de pedodiversidad
 
@@ -96,19 +109,20 @@ Para estimar la pedodiversidad se utilizó el algoritmo propuesto por Rositter e
 
 
 
+
+
+
 ## Resultados
 
 Se presenta un mapa de cloropletas con los valores de entropía de RAO, que oscilan de 0 a 1, en donde 1 correspnderían a áreas con máxima incertidumbre. Los valores mas altos son cercanos a 0.8. Se observa una tendencia a la alta incertidumbre en los departamentos Vichada y Meta, valores intermedios en Caquetá e incertidumbre baja a moderada (en el rango 0.2 a 0.6) en Guaviare.
 
 
 ```r
-ggplot() +
-  geom_sf(data = meta_RAO, aes(fill = RAO), color = NA )+
-  geom_sf(data = guaviare_RAO, aes(fill = RAO),color = NA)+
-  geom_sf(data = vichada_RAO, aes(fill = RAO),color = NA)+
-  geom_sf(data = caqueta_RAO, aes(fill = RAO),color = NA)+
+p_RAO <- ggplot() +
+  geom_sf(data = deptos_RAO,
+          aes(fill = RAO), color = NA )+
   scale_fill_gradientn(colours = pal)+
-  ggsn::scalebar(data = nucleos %>% filter(str_detect(OBSERV,"Nucleo 1|Nucleo 2")), 
+  ggsn::scalebar(data = deptos_RAO, 
            dist = 100, 
            dist_unit = "km",
            transform = TRUE,
@@ -120,15 +134,29 @@ ggplot() +
            box.fill = c("grey20","#c3beb8"),
            family = "robotoc")+
   theme(legend.position = "top")+
-  guides(fill = guide_colourbar(title.position = "top",
+  guides(fill = guide_colourbar(title = "Incertidumbre - Rao",
+                                title.position = "top",
                                 title.hjust = 0.5,
                                 barwidth = unit(15,"lines"),
                                 barheight = unit(0.5,"lines")))+
   scale_x_continuous(breaks=c(-76, -73, -70))+
   scale_y_continuous(breaks=c(2,4))
+
+p_RAO
 ```
 
 <img src="Pedodiversidad_reporte_files/figure-html/mapa_RAO-1.png" style="display: block; margin: auto;" />
+
+```r
+rm(p_RAO)
+gc()
+```
+
+```
+##            used  (Mb) gc trigger  (Mb) max used  (Mb)
+## Ncells  1667067  89.1    2874237 153.6  2874237 153.6
+## Vcells 13847880 105.7   30611481 233.6 47830342 365.0
+```
 
 
 
@@ -140,16 +168,14 @@ En el dashboard (link) se presenta una gráfica interactiva en la cual se puede 
 
 
 ```r
-meta_centroids = st_centroid(meta_RAO)
-
 # En el dashboard, 
 ggplot()+
-  geom_sf(data = meta_RAO, 
+  geom_sf(data = deptos_RAO %>% filter(DEPARTAMENTO == "Guaviare"), 
           aes(fill = RAO),
           color = NA)+
-  geom_label_repel( data = meta_centroids %>% 
-                     filter(UCS_F == "RVGay") %>%
-                     distinct(., geometry, .keep_all = TRUE),   
+  geom_label_repel( data = UCS_centroids %>% 
+                     filter(DEPARTAMENTO == "Guaviare")%>%
+                     filter(UCS_F == "ZVAb"),
                    aes(label = UCS_F, geometry = geometry),
                    alpha = 0.7,
                    col = "grey20",
@@ -166,7 +192,7 @@ ggplot()+
                    segment.angle = 30, 
                    segment.ncp = 10,
                    show.legend = FALSE) +
-  ggsn::scalebar(data = meta_RAO, 
+  ggsn::scalebar(data = deptos_RAO %>% filter(DEPARTAMENTO == "Guaviare"), 
            dist = 50, 
            dist_unit = "km",
            transform = TRUE,
@@ -180,14 +206,61 @@ ggplot()+
   theme(legend.position = "top")+
   scale_fill_gradientn(colours = pal)+
   guides(colour = "none",
-         fill = guide_colourbar(title.position = "top",
+         fill = guide_colourbar(title = "Incertidumbre - Rao",
+                                title.position = "top",
                                 title.hjust = 0.5,
                                 barwidth = unit(15,"lines"),
-                                barheight = unit(0.5,"lines")))+
-  scale_x_continuous(breaks=c(-74, -73, -72))+
-  scale_y_continuous(breaks=c(2,3))
+                                barheight = unit(0.5,"lines")))
 ```
 
 <img src="Pedodiversidad_reporte_files/figure-html/plot_dash_1-1.png" style="display: block; margin: auto;" />
 
+```r
+#change the scale_x breaks to automate
+```
+
+
+```r
+ggplot(data = deptos_RAO %>% 
+         st_drop_geometry()%>%
+         filter(DEPARTAMENTO == "Guaviare")%>% 
+         distinct(UCS_F, .keep_all = TRUE), 
+       aes(y = RAO, x = UCS_TIPO, color = RAO))+
+    geom_jitter(aes(size = NUM_SUELOS),
+                alpha = 0.5, 
+                width = 0.25, 
+                shape = 19)+
+    geom_label_repel(data = . %>% filter(UCS_F == "ZVAb"), 
+                     aes(label = UCS_F),
+                   alpha = 0.7,
+                   col = "grey20",
+                   size = 3,
+                   direction = "both",
+                   box.padding = 1,
+                   family = "roboto",
+                   segment.size = 0.3,
+                   segment.square = FALSE,
+                   show.legend = FALSE)+
+    geom_hline(aes(yintercept = 0.5), 
+               color = "#c3beb8", 
+               size = 0.5, 
+               linetype = "dashed")+
+    stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "grey20")+
+    coord_flip() +
+    guides(color = "none",
+           size = guide_legend(title = "Tipos de suelos",
+                               label.position = "bottom",
+                               nrow = 1,
+                               override.aes=list(colour= "#c3beb8",
+                                                 shape = 16)))+
+    scale_y_continuous(limits = c(0, 0.8))+
+    scale_size_continuous(breaks = c(1,2,3,4,5,6))+
+    scale_colour_gradientn(colours = pal) +
+    labs(x = NULL, y = "Incertidumbre - Rao")+
+    theme(legend.position = "top",
+          axis.text.y = element_text(size = 12, face = "bold"),
+          panel.border = element_rect(fill = NA, colour = "#c3beb8"))
+```
+
+<img src="Pedodiversidad_reporte_files/figure-html/plot_dash_2-1.png" style="display: block; margin: auto;" />
 

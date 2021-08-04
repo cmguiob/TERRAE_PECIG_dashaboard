@@ -95,7 +95,7 @@ for (i in 1:length(urls)){
   unzip(temp, exdir=tempd) #Descomprimir
 }
 
-files_names <- list.files(tempd, pattern = "*.geojson") #Leer nombres de archivos
+files_names <- list.files(tempd, pattern = "*.geojson|*.rds") #Leer nombres de archivos
 files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
 
 # Crear objetos
@@ -105,7 +105,6 @@ meta_nucleo <- files_paths %>% .[str_detect(.,"meta_")] %>% st_read()
 guaviare_nucleo <- files_paths %>% .[str_detect(.,"guaviare_")] %>% st_read()
 vichada_nucleo <- files_paths %>% .[str_detect(.,"vichada_")] %>% st_read()
 caqueta_nucleo <- files_paths %>% .[str_detect(.,"caqueta_")] %>% st_read()
-
 
 #Cargar resultados del algoritmo.
 RAO_out <- read_csv("https://raw.githubusercontent.com/cmguiob/TERRAE_PECIG_dashaboard/main/Resultados/Pedodiversidad_RAO_nucleos_1_2.csv") %>%
@@ -159,7 +158,7 @@ p_nucleos <- ggplot() +
 p_deptos + p_nucleos
 
 rm(p_deptos, p_nucleos, deptos, nucleos)
-gc()
+gc(verbose = F)
   
 ```
 
@@ -175,45 +174,56 @@ Para estimar la pedodiversidad se utilizó el algoritmo propuesto por Rositter e
 
 #Join estimados de pedodiversidad con poligonos
 
-meta_RAO <- inner_join(meta_nucleo, RAO_out %>% filter(DEPARTAMENTO == "Meta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) %>%
-                  distinct(., geometry, .keep_all = TRUE)
+meta_RAO <- inner_join(meta_nucleo, RAO_out %>% 
+                                    filter(DEPARTAMENTO == "Meta")%>%
+                                    distinct(UCS_F, .keep_all = TRUE),
+                       by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) 
 
-guaviare_RAO <- inner_join(guaviare_nucleo, RAO_out %>% filter(DEPARTAMENTO == "Guaviare"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) %>%
-                  distinct(., geometry, .keep_all = TRUE)
+guaviare_RAO <- inner_join(guaviare_nucleo, RAO_out %>% 
+                                    filter(DEPARTAMENTO == "Guaviare")%>%
+                                    distinct(UCS_F, .keep_all = TRUE),
+                       by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
-vichada_RAO <- inner_join(vichada_nucleo, RAO_out %>% filter(DEPARTAMENTO == "Vichada"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) %>%
-                  distinct(., geometry, .keep_all = TRUE)
+vichada_RAO <- inner_join(vichada_nucleo, RAO_out %>% 
+                                    filter(DEPARTAMENTO == "Vichada")%>%
+                                    distinct(UCS_F, .keep_all = TRUE),
+                       by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
-caqueta_RAO <- inner_join(caqueta_nucleo, RAO_out %>% filter(DEPARTAMENTO == "Caqueta"), by = c("UCS_F", "DEPARTAMENTO", "NUCLEO")) %>%
-                  distinct(., geometry, .keep_all = TRUE)
+caqueta_RAO <- inner_join(caqueta_nucleo, RAO_out %>% 
+                                    filter(DEPARTAMENTO == "Caqueta")%>%
+                                    distinct(UCS_F, .keep_all = TRUE),
+                       by = c("UCS_F", "DEPARTAMENTO", "NUCLEO"))
 
-deptos_RAO <- rbind(meta_RAO, guaviare_RAO, vichada_RAO, caqueta_RAO)
+deptos_RAO <- rbind(meta_RAO, guaviare_RAO, vichada_RAO , caqueta_RAO)
+            
 
 rm(meta_nucleo, guaviare_nucleo, vichada_nucleo, caqueta_nucleo)
-gc()
+gc(verbose = FALSE)
 
-
+#Run this chunk if new data are added. I saved it for the shiny app
+#saveRDS(deptos_RAO, file = "deotps_RAO.rds")
 
 ```
 
 ```{r prep_2}
 
-meta_centroids <- st_centroid(meta_RAO) %>%
-                  distinct(., geometry, .keep_all = TRUE)
-guaviare_centroids <- st_centroid(guaviare_RAO) %>%
-                  distinct(., geometry, .keep_all = TRUE)
-vichada_centroids <- st_centroid(vichada_RAO) %>%
-                  distinct(., geometry, .keep_all = TRUE)
-caqueta_centroids <- st_centroid(caqueta_RAO) %>%
-                  distinct(., geometry, .keep_all = TRUE)
+meta_centroids <- st_centroid(meta_RAO)
+guaviare_centroids <- st_centroid(guaviare_RAO)
+vichada_centroids <- st_centroid(vichada_RAO) 
+caqueta_centroids <- st_centroid(caqueta_RAO) 
 
-deptos_centroids <- rbind(meta_centroids, 
+UCS_centroids <- rbind(meta_centroids, 
                           guaviare_centroids, 
                           vichada_centroids, 
                           caqueta_centroids) 
 
 rm(meta_centroids, guaviare_centroids, vichada_centroids, caqueta_centroids)
 gc()
+
+#Run this chunk if new data are added. I saved it for the shiny app                  
+#saveRDS(UCS_centroids, file = "UCS_centroids.rds")
+
+
 
 ```
 
@@ -259,7 +269,7 @@ gc()
 
 #graficar EDA de UCS
 
-plot_EDA <- ggplot(data = deptos_RAO %>% 
+p_EDA <- ggplot(data = deptos_RAO %>% 
                      st_drop_geometry(), 
                    aes(y = RAO, x = NUM_SUELOS)) +
   geom_half_violin(width=1.4, 
@@ -315,10 +325,9 @@ ggplot()+
   geom_sf(data = deptos_RAO %>% filter(DEPARTAMENTO == "Guaviare"), 
           aes(fill = RAO),
           color = NA)+
-  geom_label_repel( data = guaviare_centroids %>% 
-                     #filter(DEPARTAMENTO == "Guaviare")%>%
-                     filter(UCS_F == "ZVAb") %>%
-                     distinct(., geometry, .keep_all = TRUE),   
+  geom_label_repel( data = UCS_centroids %>% 
+                     filter(DEPARTAMENTO == "Guaviare")%>%
+                     filter(UCS_F == "ZVAb"),
                    aes(label = UCS_F, geometry = geometry),
                    alpha = 0.7,
                    col = "grey20",
@@ -365,18 +374,29 @@ ggplot()+
 
 ggplot(data = deptos_RAO %>% 
          st_drop_geometry()%>%
-         filter(DEPARTAMENTO == "Vichada")%>% 
+         filter(DEPARTAMENTO == "Guaviare")%>% 
          distinct(UCS_F, .keep_all = TRUE), 
        aes(y = RAO, x = UCS_TIPO, color = RAO))+
     geom_jitter(aes(size = NUM_SUELOS),
                 alpha = 0.5, 
                 width = 0.25, 
                 shape = 19)+
+    geom_label_repel(data = . %>% filter(UCS_F == "ZVAb"), 
+                     aes(label = UCS_F),
+                   alpha = 0.7,
+                   col = "grey20",
+                   size = 3,
+                   direction = "both",
+                   box.padding = 1,
+                   family = "roboto",
+                   segment.size = 0.3,
+                   segment.square = FALSE,
+                   show.legend = FALSE)+
     geom_hline(aes(yintercept = 0.5), 
                color = "#c3beb8", 
                size = 0.5, 
                linetype = "dashed")+
-    stat_summary(fun = mean, geom = "point", size = 5, shape = 18, color = "grey20")+
+    stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "grey20")+
     coord_flip() +
     guides(color = "none",
            size = guide_legend(title = "Tipos de suelos",
