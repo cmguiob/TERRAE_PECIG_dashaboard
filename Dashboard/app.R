@@ -36,38 +36,59 @@ theme_set(theme_minimal(base_family = "roboto"))
 
 theme_update(panel.grid = element_blank(),
              axis.text = element_text(family = "robotoc",
-                                      color = "#c3beb8"),
+                                      color = "#c3beb8",
+                                      size = 16),
              axis.title = element_blank(),
              axis.ticks =  element_line(color = "#c3beb8", size = .7),
-             legend.title = element_text(size = 12, 
+             legend.title = element_text(size = 20, 
                                          face = "bold", 
                                          color = "grey20", 
                                          family = "roboto"),
-             legend.text = element_text(size = 9, 
+             legend.text = element_text(size = 16, 
                                         color = "#c3beb8", 
                                         family = "robotoc",
                                         face = "bold"),
              legend.key.size = unit(0.7, "cm"),
-             strip.background = element_blank(),
-             strip.text = element_text(face= "bold", color = "#c3beb8", size = 9))
+             strip.background = element_blank())
 
 #-------------------------------- APP
 
 library(shiny)
 
 ui <- fluidPage(
+  tags$head(
+    # Note the wrapping of the string in HTML()
+    tags$style(HTML("
+      @import url('https://fonts.googleapis.com/css?family=Playfair+Display|Roboto');
+      h1 {
+        font-family: 'Playfair Display';
+      }
+      .selectize-input {
+        height: 14px;
+        font-size: 12pt;
+        font-family: 'Roboto';
+        padding-top: 5px;
+        color: #c3beb8;
+      }
+      .shiny-input-container {
+        color: #474747;
+      }"))
+  ),
   headerPanel(title = "Unidades Cartográficas de Suelos del PMA - PECIG"),
+  br(),
   sidebarPanel(
-  selectInput(inputId = "departamento",
-              label = "Selecciona un departamento",
+    selectInput(inputId = "departamento",
+              label = shiny::HTML("<p> <span style ='font-family: Roboto; font-size: 14pt;'> Selecciona un departamento </span></p>"),
               choices = c("Guaviare","Meta", "Vichada", "Caqueta")),
-  plotOutput(outputId = "mapa")
+    plotOutput(outputId = "mapa")
   ),
   mainPanel(
-    plotOutput(outputId = "puntos"))
+    plotOutput(outputId = "puntos"),
+    uiOutput("UCS_select"))
 )
 
 server <- function(input, output, session) {
+  
   output$mapa <- renderPlot({
     
     showtext_auto()
@@ -78,11 +99,11 @@ server <- function(input, output, session) {
               color = NA)+
       ggrepel::geom_label_repel( data = UCS_centroids %>% 
                           filter(DEPARTAMENTO == input$departamento)%>%
-                          filter(UCS_F == "ZVAb"),
+                          filter(UCS_F == input$UCS),
                         aes(label = UCS_F, geometry = geometry),
                         alpha = 0.7,
                         col = "grey20",
-                        size = 3,
+                        size = 4,
                         force_pull  = 0.2,
                         max.overlaps = Inf,
                         direction = "both",
@@ -96,18 +117,21 @@ server <- function(input, output, session) {
                         segment.ncp = 10,
                         show.legend = FALSE) +
       ggsn::scalebar(data = deptos_RAO %>% filter(DEPARTAMENTO == input$departamento), 
-                     dist = 50, 
+                     dist = 25, 
                      dist_unit = "km",
                      transform = TRUE,
-                     st.dist = 0.05,
+                     st.dist = 0.06,
                      st.color = "grey20",
-                     st.size = 3,
+                     st.size = 4,
                      height=0.02,
                      box.color = NA,
                      box.fill = c("grey20","#c3beb8"),
                      family = "robotoc")+
-      theme(legend.position = "top")+
+      theme(legend.position = "top",
+            axis.text = element_blank(),
+            axis.ticks = element_blank())+
       scale_fill_gradientn(colours = pal)+
+      scale_y_continuous(expand=c(0, 0.5))+
       guides(colour = "none",
              fill = guide_colourbar(title = "Incertidumbre - Rao",
                                     title.position = "top",
@@ -116,7 +140,7 @@ server <- function(input, output, session) {
                                     barheight = unit(0.5,"lines")))
     
     
-  })
+  }, bg="transparent", execOnResize = TRUE)
   
   output$puntos <- renderPlot({
     
@@ -129,12 +153,14 @@ server <- function(input, output, session) {
                   alpha = 0.5, 
                   width = 0.25, 
                   shape = 19)+
-      geom_label_repel(data = . %>% filter(UCS_F == "ZVAb"), 
-                       aes(label = UCS_F),
+      geom_label_repel(data = . %>% filter(UCS_F == input$UCS), 
+                       aes(label = input$UCS),
                        alpha = 0.7,
                        col = "grey20",
-                       size = 3,
-                       direction = "both",
+                       size = 4,
+                       direction = "y",
+                       nudge_y = 0,
+                       nudge_x = 0.05,
                        box.padding = 1,
                        family = "roboto",
                        segment.size = 0.3,
@@ -147,18 +173,30 @@ server <- function(input, output, session) {
       stat_summary(fun = mean, geom = "point", size = 4, shape = 18, color = "grey20")+
       coord_flip() +
       guides(color = "none",
-             size = guide_legend(title = "Tipos de suelos",
+             size = guide_legend(title = "Tipos de suelos que contiene la UCS",
                                  label.position = "bottom",
                                  nrow = 1,
                                  override.aes=list(colour= "#c3beb8",
                                                    shape = 16)))+
       scale_y_continuous(limits = c(0, 0.8))+
-      scale_size_continuous(breaks = c(1,2,3,4,5,6))+
+      scale_size_continuous(breaks = c(1,2,3,4,5,6)) +
       scale_colour_gradientn(colours = pal) +
       labs(x = NULL, y = "Incertidumbre - Rao")+
       theme(legend.position = "top",
-            axis.text.y = element_text(size = 12, face = "bold"),
+            axis.text.y = element_text(size = 20, face = "bold"),
             panel.border = element_rect(fill = NA, colour = "#c3beb8"))
+  }, height = 370)
+  
+  output$UCS_select <- renderUI({
+    radioButtons(inputId = "UCS", 
+                 label = shiny::HTML("<p> <span style ='font-family: Roboto; font-size: 14pt'> Unidades Cartográficas de Suelos </span></p>"),
+                 choices = deptos_RAO %>% 
+                        st_drop_geometry()%>%
+                        filter(DEPARTAMENTO == input$departamento) %>% 
+                        distinct(UCS_F, .keep_all = TRUE) %>%
+                        arrange(desc(RAO)) %>%
+                        pull(UCS_F),
+                 inline = TRUE)
   })
   
 }
