@@ -1,7 +1,7 @@
 # Explora los suelos del PMA - PECIG 
 
-## Un dashboard
-### A dashboard
+## El dashboard
+### The dashboard
  
  Este repositorio contiene la documentación y el código para un dashboard interactivo creado con R-shiny. El dashboard permite visibilizar y explorar la complejidad de las *Unidades Cartográficas de Suelos (UCS)* presentadas en el [Plan de Manejo Ambiental (PMA)](https://www.anla.gov.co/proyectos-anla/proyectos-de-interes-en-evaluacion-pecig) del **Programa para la Erradicación de Cultivos Ilícitos con Glifosato (PECIG)** en 2019/2020.
  
