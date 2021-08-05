@@ -24,7 +24,7 @@ El PMA presenta mapas categóricos de cloropletas de UCS y tablas con algunas de
 
 ![dashboard_soelosPECIG](https://github.com/cmguiob/UCS_PECIG_dashaboard/raw/main/app_gif.gif)
 
-### ¿Interés en colaborar?
+## ¿Interés en colaborar?
 #### Would you like to to contribute?
 
 Este dashboard es una simplificación en varios sentidos: no explora aún las propiedades de cada tipo de suelo por UCS (si hay datos!!), se limita a cuatro departamentos y utiliza un algorítmo realmente básico para estimar incertidumbre/diversidad. El dashboard sintetiza los resultados de una [consultoría](https://c337b8bf-6dae-4ebe-9a71-68b759c9d01e.filesusr.com/ugd/302d3c_be8a0e0f57ae4a4484e502664722b442.pdf) realizada con apoyo de la  [Corporación Geoambiental Terrae](https://www.terraegeoambiental.org/) y patrocinio de la [ONG Dejusticia](https://www.dejusticia.org/por-que-dijimos-no-a-las-fumigaciones-aereas-con-glifosato-durante-una-audiencia-publica/), con quienes colaboré para generar nuevos análisis en torno a esta problemática, los cuáles [presentamos](https://c337b8bf-6dae-4ebe-9a71-68b759c9d01e.filesusr.com/ugd/302d3c_3fac02b7c1524de9bd8d273adb722dd9.pdf) en la audiencia pública de diciembre 2019.
