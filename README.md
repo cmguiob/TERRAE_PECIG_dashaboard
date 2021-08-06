@@ -5,7 +5,7 @@
  
  Este repositorio contiene la documentación y el código para un dashboard interactivo creado con R-shiny. El dashboard permite visibilizar y explorar la complejidad de las *Unidades Cartográficas de Suelos (UCS)* presentadas en el [Plan de Manejo Ambiental (PMA)](https://www.anla.gov.co/proyectos-anla/proyectos-de-interes-en-evaluacion-pecig) del **Programa para la Erradicación de Cultivos Ilícitos con Glifosato (PECIG)** en 2019/2020. El dashboard sintetiza los resultados de una [consultoría](https://c337b8bf-6dae-4ebe-9a71-68b759c9d01e.filesusr.com/ugd/302d3c_be8a0e0f57ae4a4484e502664722b442.pdf) realizada con la  [Corporación Geoambiental Terrae](https://www.terraegeoambiental.org/) para la [ONG Dejusticia](https://www.dejusticia.org/por-que-dijimos-no-a-las-fumigaciones-aereas-con-glifosato-durante-una-audiencia-publica/), con quienes generamos nuevos análisis en torno a esta problemática, [presentados](https://c337b8bf-6dae-4ebe-9a71-68b759c9d01e.filesusr.com/ugd/302d3c_3fac02b7c1524de9bd8d273adb722dd9.pdf) en la audiencia pública de la ANLA diciembre 2019.
  
-*A dashboard to visibilize and explore the complexity of soil-related data from the Plan for Erradication of Illicit Crops with Glyphosate [(PECIG)](https://www.anla.gov.co/proyectos-anla/proyectos-de-interes-en-evaluacion-pecig) in Colombia.*
+*In this repo you will find documentation and code for a R-shiny dashboard that visibilizes and explores the complexity of soil-related data from the Plan for Erradication of Illicit Crops with Glyphosate [(PECIG)](https://www.anla.gov.co/proyectos-anla/proyectos-de-interes-en-evaluacion-pecig) in Colombia.*
 
 ## ¿Por qué?
 #### Why?
