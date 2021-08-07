@@ -40,7 +40,7 @@ theme_update(panel.grid = element_blank(),
                                       color = "#c3beb8",
                                       size = 16),
              axis.title = element_blank(),
-             axis.ticks =  element_line(color = "#c3beb8", size = .7),
+             axis.ticks =  element_blank(),
              legend.title = element_text(size = 22, 
                                          #face = "bold", 
                                          color = "#474747", 
@@ -213,13 +213,14 @@ server <- function(input, output, session) {
       labs(x = NULL, y = "Incertidumbre - Rao")+
       theme(legend.position = "top",
             axis.text.y = element_text(size = 20),
-            panel.border = element_rect(fill = NA, colour = "#c3beb8", size = 1))
+            panel.border = element_rect(fill = NA, colour = "#c3beb8", size = (1)),
+            panel.grid.major.y = element_line(colour= "#F0EBE5", size = (17)))
   }, height = 360)
   
   output$UCS_select <- renderUI({
     prettyRadioButtons(
       inputId = "UCS", 
-      label = shiny::HTML("<p> <span style ='font-family: Roboto; font-size: 16pt'> Unidades Cartográficas de Suelos (UCS) </span></p>"),
+      label = shiny::HTML("<p> <span style ='font-family: Roboto; font-size: 16pt'> Selecciona una unidad cartográfica de suelos (UCS) </span></p>"),
       choices = deptos_RAO %>% 
         st_drop_geometry()%>%
         filter(DEPARTAMENTO == input$departamento) %>% 

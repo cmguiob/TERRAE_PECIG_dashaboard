@@ -5,9 +5,9 @@ account: cmguiob
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4460145
-bundleId: 4892817
+bundleId: 4896131
 url: https://cmguiob.shinyapps.io/suelosPECIG/
-when: 1628197194.84518
-lastSyncTime: 1628197194.84518
+when: 1628272015.07333
+lastSyncTime: 1628272015.07333
 asMultiple: FALSE
 asStatic: FALSE
