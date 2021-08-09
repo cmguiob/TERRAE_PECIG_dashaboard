@@ -27,9 +27,9 @@ El PMA presenta mapas categóricos de cloropletas de UCS y tablas con algunas de
 ## ¿Interés en colaborar?
 #### Would you like to to contribute?
 
-Este dashboard es una simplificación en varios sentidos: no explora aún las propiedades de cada tipo de suelo por UCS (si hay datos!!), se limita a cuatro departamentos y utiliza un algorítmo realmente básico para estimar incertidumbre/diversidad. POdrías colabora con financiación, código o distribución del dashboard!
+Este dashboard está incompleto en varios sentidos: no explora aún las propiedades de cada tipo de suelo por UCS (si hay datos!!), se limita a cuatro departamentos y utiliza un algorítmo realmente básico para estimar incertidumbre/diversidad. POdrías colabora con financiación, código o distribución del dashboard!
 
-*This dashboard is a siplification in many ways: it doesn't explore yet the properties of each soil type present in the CSUs (although the data exists!!), it is limited to four departments and it uses a basic algorithm to estimate uncertainty/diversity. Either funding, coding collaboration or spreading the dashboard woud be appreaciated!*
+*This dashboard is incomplete in many ways: it doesn't explore yet the properties of each soil type present in the CSUs (although the data exists!!), it is limited to four departments and it uses a basic algorithm to estimate uncertainty/diversity. Either funding, coding collaboration or spreading the dashboard woud be appreaciated!*
 
 
 
