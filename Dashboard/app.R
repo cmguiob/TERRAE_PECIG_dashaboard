@@ -214,7 +214,8 @@ server <- function(input, output, session) {
       theme(legend.position = "top",
             axis.text.y = element_text(size = 20),
             panel.border = element_rect(fill = NA, colour = "#c3beb8", size = (1)),
-            panel.grid.major.y = element_line(colour= "#F0EBE5", size = (17)))
+            #panel.grid.major.y = element_line(colour= "#F0EBE5", size = (17))
+            )
   }, height = 360)
   
   output$UCS_select <- renderUI({
