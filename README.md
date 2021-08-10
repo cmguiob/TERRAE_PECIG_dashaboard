@@ -10,9 +10,9 @@
 ## ¿Por qué?
 #### Why?
 
-El PMA presenta mapas categóricos de cloropletas de UCS y tablas con algunas de sus características. Sin emabargo, visualizar las decenas de UCS de esta forma satura la capacidad de percepción y análisis en la toma de decisiones ambientales, en este caso, de la incertidumbre -central en el principio de precaución-. El [dashboard *suelosPECIG*](https://cmguiob.shinyapps.io/suelosPECIG/) es una herramienta pedagógica, exploratoria y de visibilización para entender la complejidad y distribución de las UCS en cuatro áreas designadas para aspersión de glifosato. La documentación del dashboard se presenta como [reporte simplificado](https://github.com/cmguiob/UCS_PECIG_dashaboard/tree/main/Reporte) -con código- que explica los datos, el procesamiento, las métricas y los principios para la creación del dashboard.
+El PMA presenta mapas categóricos de coropletas de UCS y tablas con algunas de sus características. Sin emabargo, visualizar las decenas de UCS de esta forma satura la capacidad de percepción y análisis en la toma de decisiones ambientales, en este caso, de la incertidumbre -central en el principio de precaución-. El [dashboard *suelosPECIG*](https://cmguiob.shinyapps.io/suelosPECIG/) es una herramienta pedagógica, exploratoria y de visibilización para entender la complejidad y distribución de las UCS en cuatro áreas designadas para aspersión de glifosato. La documentación del dashboard se presenta como [reporte simplificado](https://github.com/cmguiob/UCS_PECIG_dashaboard/tree/main/Reporte) -con código- que explica los datos, el procesamiento, las métricas y los principios para la creación del dashboard.
 
-*The environmental management plan for the PECIG presents categorical chloropleth maps of hundreds cartographic soil units (CSUs), which make difficult to interpret soil data in form of uncertainty. With the [dashboard *suelosPECIG*](https://cmguiob.shinyapps.io/suelosPECIG/) I intend to convey the distribution, meaning and complexity of CSUs within the framework of the precautionary principle in environmental decision-making.*
+*The environmental management plan for the PECIG presents categorical choropleth maps of hundreds cartographic soil units (CSUs), which make difficult to interpret soil data in form of uncertainty. With the [dashboard *suelosPECIG*](https://cmguiob.shinyapps.io/suelosPECIG/) I intend to convey the distribution, meaning and complexity of CSUs within the framework of the precautionary principle in environmental decision-making.*
 
 ### El punto de partida
 #### The point of departure
@@ -27,9 +27,9 @@ El PMA presenta mapas categóricos de cloropletas de UCS y tablas con algunas de
 ## ¿Interés en colaborar?
 #### Would you like to to contribute?
 
-Este dashboard es una simplificación en varios sentidos: no explora aún las propiedades de cada tipo de suelo por UCS (si hay datos!!), se limita a cuatro departamentos y utiliza un algorítmo realmente básico para estimar incertidumbre/diversidad. POdrías colabora con financiación, código o distribución del dashboard!
+Este dashboard está incompleto en varios sentidos: no explora aún las propiedades de cada tipo de suelo por UCS (si hay datos!!), se limita a cuatro departamentos y utiliza un algorítmo realmente básico para estimar incertidumbre/diversidad. Podrías colabora con financiación, código o distribución del dashboard!
 
-*This dashboard is a siplification in many ways: it doesn't explore yet the properties of each soil type present in the CSUs (although the data exists!!), it is limited to four departments and it uses a basic algorithm to estimate uncertainty/diversity. Either funding, coding collaboration or spreading the dashboard woud be appreaciated!*
+*This dashboard is incomplete in many ways: it doesn't explore yet the properties of each soil type present in the CSUs (although the data exists!!), it is limited to four departments and it uses a basic algorithm to estimate uncertainty/diversity. Either funding, coding collaboration or further distribution of the dashboard woud be appreaciated!*
 
 
 
