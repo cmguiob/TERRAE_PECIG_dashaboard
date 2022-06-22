@@ -67,11 +67,11 @@ theme_update(panel.grid = element_blank(),
 
 ## Motivación
 
-El Plan de Manejo Ambiental (PMA) del Programa para la Erradicación de Cultivos Ilícitos con Glifosato (PECIG) se modificó en 2019 con el objetivo de reactivar dicho programa, el cual había sido suspendido en 2015 conforme al principio de preacución. Uno de los requisitos del PMA es el análisis de suelos, el cual es relevante para entender el destino ambiental del glifosáto, por ejemplo, debido a la capacidad de los suelos de adsorber, modificar o liberar este pesticida. Los análisis que presenta el PMA se limitan a nombrar las Unidades Cartográficas de Suelos (UCS), sin investigar los suelos que las componen, sus propiedades y manejo, lo cuál tiene consecuencias nocivas para la toma de decisiones ambientales. Mediante el uso de un dashboard interactivo, se espera que la información de suelos en el marco del PECIG se vuelva transparente y asequible a la población.
+El Plan de Manejo Ambiental (PMA) del Programa para la Erradicación de Cultivos Ilícitos con Glifosato (PECIG) se modificó en 2019 con el objetivo de reactivar dicho programa, el cual había sido suspendido en 2015 conforme al principio de preacución. Uno de los requisitos del PMA es el análisis de suelos, el cual es relevante para entender el destino ambiental del glifosáto, por ejemplo, debido a la capacidad de los suelos de adsorber, modificar o liberar este pesticida. Los análisis que presenta el PMA se limitan a nombrar las Unidades Cartográficas de Suelos (UCS), sin investigar los suelos que las componen, sus propiedades y manejo. Mediante el uso de un dashboard interactivo, se espera que la información de suelos en el marco del PECIG se vuelva transparente y asequible a la población.
 
 ## Los datos
 
-Los 6 polígonos donde se realizaría la aspersión -llamados núcleos en el PMA del PECIG - se obtuvieron de la página web de la Agencia Nacional de Licencias Ambientales (ANLA). La información geográfica de suelos por departamento se obtuvo de los datos abiertos del IGAC en 2019 y 2020. La información de perfiles de suelo se obtuvo de los estudios de suelo del IGAC de los departamentos respectivos, publicados en 2014. Debido a la disponibilidad de datos de libre acceso, se presentan únicamente los casos del núcleo san josé (departamentos Meta, Vichada y Guaviare) y el núcleo caquetá (departamento Caquetá).
+Los 6 polígonos donde se realizaría la aspersión -llamados núcleos en el PMA del PECIG - se obtuvieron de la página web de la Agencia Nacional de Licencias Ambientales (ANLA). La información geográfica de suelos por departamento se obtuvo de los datos abiertos del IGAC en 2019 y 2020. La información de perfiles de suelo se obtuvo de los estudios de suelo del IGAC de los departamentos respectivos, publicados en 2014. Debido a la disponibilidad de datos de libre acceso, se presentan únicamente los casos del núcleo San José (departamentos Meta, Vichada y Guaviare) y el núcleo Caquetá (departamento Caquetá).
 
 
 ```{r load_raw}
@@ -83,11 +83,11 @@ tempd <- tempdir()
 
 urls <- list()
 
-urls$nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Area_Influencia_Directa_19022020.zip?raw=true"
+urls$nucleos <- "https://github.com/cmguiob/UCS_PECIG_dashaboard/blob/main/Datos_SIG/Area_Influencia_Directa_19022020.zip"
 
-urls$deptos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/DIVA_adm_colombia.zip?raw=true"
+urls$deptos <- "https://github.com/cmguiob/UCS_PECIG_dashaboard/blob/main/Datos_SIG/DIVA_adm_colombia.zip?raw=true"
 
-urls$deptos_nucleos <- "https://github.com/cmguiob/TERRAE_PECIG_dashaboard/blob/main/Datos_SIG/Suelos_Departamentos_Nucleos_1_2.zip?raw=true"
+urls$deptos_nucleos <- "https://github.com/cmguiob/UCS_PECIG_dashaboard/blob/main/Datos_SIG/Suelos_Departamentos_Nucleos_1_2.zip?raw=true"
 
 
 for (i in 1:length(urls)){
@@ -99,6 +99,7 @@ files_names <- list.files(tempd, pattern = "*.geojson|*.rds") #Leer nombres de a
 files_paths <- paste(file.path(tempd), files_names[], sep = "\\") #Crear rutas
 
 # Crear objetos
+# Es lo mismo que files_paths[str_detect(files_paths,"xxx")] 
 nucleos <- files_paths %>% .[str_detect(.,"Area_Influencia_Directa")] %>% st_read()
 deptos <- files_paths %>% .[str_detect(.,"adm")] %>% st_read()
 meta_nucleo <- files_paths %>% .[str_detect(.,"meta_")] %>% st_read()
@@ -107,7 +108,7 @@ vichada_nucleo <- files_paths %>% .[str_detect(.,"vichada_")] %>% st_read()
 caqueta_nucleo <- files_paths %>% .[str_detect(.,"caqueta_")] %>% st_read()
 
 #Cargar resultados del algoritmo.
-RAO_out <- read_csv("https://raw.githubusercontent.com/cmguiob/TERRAE_PECIG_dashaboard/main/Resultados/Pedodiversidad_RAO_nucleos_1_2.csv") %>%
+RAO_out <- read_csv("https://raw.githubusercontent.com/cmguiob/UCS_PECIG_dashaboard/main/Datos/Resultados/Pedodiversidad_RAO_nucleos_1_2.csv") %>%
   mutate(NUCLEO = case_when(
     NUCLEO_ID == 1 ~ "San Jose",
     NUCLEO_ID == 2 ~ "Caqueta"))
